@@ -1,41 +1,53 @@
 # Active Context: groww-intraday
 
 ## Current Status
-**All foundational work + 2 bug fixes complete.** 102/102 tests pass. Two PRs open awaiting merge.
+**Interactive dashboard complete.** PR #4 open for review. 166/166 tests still green.
 
 ## Open PRs
 | PR | Branch | Status | Contents |
 |----|--------|--------|----------|
-| [#1](https://github.com/venki131/groww-intraday/pull/1) | `docs/memento-and-workflow-rules` | Open | Memento, CLAUDE.md, .gitignore, GRAPH_REPORT.md |
-| [#2](https://github.com/venki131/groww-intraday/pull/2) | `fix/live-trading-guard-and-ema-crossover` | Open | 2 bug fixes — 102 tests green |
+| [#4](https://github.com/venki131/groww-intraday/pull/4) | `feature/interactive-dashboard` | Open | 4-tab Streamlit dashboard rewrite |
+| [#3](https://github.com/venki131/groww-intraday/pull/3) | `feature/nifty100-market-data-collection` | Open | Nifty 100 market-data collection module |
 
 ## Last Completed Work
-### Session 2 (bug fixes)
-1. ✅ Fixed `test_live_trading_blocked` — added `LiveTradingBlockedError` guard in [`MockBroker.__init__`](../broker/mock.py) when `mode="live"`
-2. ✅ Fixed `test_ema_bullish_crossover_produces_buy` — changed bullish crossover from strict `<` to `<=` in [`EMACrossoverStrategy`](../strategies/ema_crossover.py) (symmetric with bearish `>=`); catches equal→above EMA transitions
-3. ✅ All 102 tests pass on branch `fix/live-trading-guard-and-ema-crossover`
-4. ✅ PR #2 created and pushed to GitHub
+### Session 4 — Interactive Dashboard
+1. ✅ Rewrote [`dashboard/app.py`](../dashboard/app.py) (152 → ~660 lines) with 4 interactive tabs
+2. ✅ **Tab 1 — Chart & Signals**: Plotly candlestick + EMA overlays + buy/sell markers + volume subplot
+3. ✅ **Tab 2 — Backtest**: Full `BacktestEngine` integration, 8 KPIs, equity curve, trade log, P&L histogram
+4. ✅ **Tab 3 — Paper Trading**: Session-persistent `MockBroker`, BUY/SELL order entry, positions table, order history, reset
+5. ✅ **Tab 4 — Universe Browser**: 100-stock table with sector filter + text search + sector donut chart
+6. ✅ Branch `feature/interactive-dashboard` pushed, PR #4 created
 
-### Session 1 (foundation)
-1. ✅ Fixed chunking bug in `fetch_candles_chunked`
-2. ✅ Initial GitHub push + Graphify knowledge graph (951 nodes, 1,747 edges)
-3. ✅ Memento files initialized, CLAUDE.md Git workflow rules added
+### Session 3 — Nifty 100 Market-Data Collection
+1. ✅ 4 new ORM models (`Instrument`, `IndexMembership`, `Candle5m`, `DataDownloadJob`)
+2. ✅ `InstrumentRegistry` with 100 stocks, ISINs, sectors, Groww symbols, historical membership
+3. ✅ Data quality pipeline + 64 new tests → 166/166 total passing
+4. ✅ PR #3 open
+
+### Sessions 1–2 — Foundation + Bug Fixes (merged)
+- PRs #1 and #2 merged into `main` (`d420429`)
+- `MockBroker` live-mode guard, symmetric EMA crossover, Memento, CLAUDE.md, Graphify
 
 ## Active Decisions
-- **Live trading disabled**: `_LIVE_TRADING_ENABLED = False` — paper-trading validation must be completed first
-- **Community labels**: Graphify communities are unnamed (`Community N`) — needs `GOOGLE_API_KEY` or `ANTHROPIC_API_KEY`
+- **Live trading disabled**: `_LIVE_TRADING_ENABLED = False` — paper-trading validation must complete first
+- **Dashboard uses synthetic data**: `MockBroker.generate_candles()` only — no live network calls
+- **InstrumentRegistry import in Tab 4**: wrapped in `try/except` — degrades gracefully to plain symbol list
+- **Paper trading state**: persisted across tab switches via `st.session_state`
 - **pandas-ta**: currently pinned to git URL; switch to `ta` package for portability
 
 ## Next Steps (Priority Order)
-1. **Merge PR #2** (bug fixes) → `main` at https://github.com/venki131/groww-intraday/pull/2
-2. **Merge PR #1** (docs/memento) → `main` at https://github.com/venki131/groww-intraday/pull/1
-3. **Paper-trading validation** — run system in paper mode; validate signal → order → fill cycle
+1. **Merge PR #4** (interactive dashboard) → `main`
+2. **Merge PR #3** (market-data collection) → `main`
+3. **Paper-trading validation** — run system in paper mode; validate signal → order → fill cycle end-to-end
 4. **Fix pandas-ta dependency** — switch from git URL to `ta` package
-5. **Optionally name communities** — set `GOOGLE_API_KEY` or `ANTHROPIC_API_KEY` and re-run `graphify cluster-only .`
+5. **Multi-symbol backtest comparison** — run same strategy across multiple tickers, compare KPIs in Tab 2
+6. **Live data feed** — Groww WebSocket integration when paper-trading phase is complete
 
 ## Key Files to Know
-- [`broker/mock.py`](../broker/mock.py) — in-memory test broker (recently fixed: live-mode guard)
-- [`strategies/ema_crossover.py`](../strategies/ema_crossover.py) — EMA crossover strategy (recently fixed: symmetric crossover)
-- [`app/market/historical_data.py`](../app/market/historical_data.py) — chunked candle fetch
+- [`dashboard/app.py`](../dashboard/app.py) — 4-tab interactive Streamlit UI (recently rewritten)
+- [`broker/mock.py`](../broker/mock.py) — in-memory paper broker with `generate_candles()`
+- [`strategies/ema_crossover.py`](../strategies/ema_crossover.py) — EMA crossover strategy
+- [`backtesting/engine.py`](../backtesting/engine.py) — `BacktestEngine`, `BacktestReport`
+- [`app/market/instruments.py`](../app/market/instruments.py) — `InstrumentRegistry` (100 stocks)
+- [`market/universe.py`](../market/universe.py) — `NIFTY100_SYMBOLS` list
 - [`config/settings.yaml`](../config/settings.yaml) — central config
-- [`graphify-out/GRAPH_REPORT.md`](../graphify-out/GRAPH_REPORT.md) — architecture summary
