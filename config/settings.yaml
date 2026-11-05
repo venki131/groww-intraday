@@ -1,0 +1,143 @@
+# =============================================================================
+# GROWW INTRADAY AUTOMATION - CENTRAL CONFIGURATION
+# Values here can be overridden by environment variables.
+# =============================================================================
+
+application:
+  name: "Groww Intraday Automation"
+  version: "0.1.0"
+  env: "development"
+  debug: false
+  log_level: "INFO"
+  timezone: "Asia/Kolkata"
+
+broker:
+  name: "groww"
+  api_base_url: "https://api.groww.in/v1"
+  ws_url: "wss://ws.groww.in/v1"
+  exchange: "NSE"
+  segment: "EQ"
+  # Live trading is permanently disabled in this configuration
+  live_trading_enabled: false
+  paper_trading_enabled: true
+  request_timeout_sec: 30
+  rate_limit_calls_per_minute: 60
+  retry_max_attempts: 3
+  retry_wait_seconds: 2
+
+market:
+  exchange: "NSE"
+  segment: "EQ"
+  candle_interval_minutes: 5
+  universe: "NIFTY100"
+  # NSE market hours (IST)
+  market_open_time: "09:15"
+  market_close_time: "15:30"
+  # Avoid trading in first/last N minutes
+  avoid_first_minutes: 15
+  avoid_last_minutes: 15
+  # Nifty 100 symbols (top 20 shown; full list loaded from DB)
+  nifty100_symbols:
+    - RELIANCE
+    - TCS
+    - HDFCBANK
+    - INFY
+    - ICICIBANK
+    - HINDUNILVR
+    - SBIN
+    - BHARTIARTL
+    - KOTAKBANK
+    - LT
+    - AXISBANK
+    - BAJFINANCE
+    - ASIANPAINT
+    - MARUTI
+    - TITAN
+    - SUNPHARMA
+    - ULTRACEMCO
+    - WIPRO
+    - NESTLEIND
+    - POWERGRID
+
+trading:
+  initial_capital: 10000
+  currency: "INR"
+  mode: "backtest"  # backtest | paper  (live is disabled)
+
+risk:
+  max_risk_per_trade_pct: 1.0
+  max_open_positions: 3
+  max_daily_loss_pct: 3.0
+  max_position_size_pct: 20.0
+  stop_loss_pct: 1.5
+  take_profit_pct: 3.0
+  trailing_stop_enabled: true
+  trailing_stop_pct: 1.0
+
+backtest:
+  start_date: "2023-01-01"
+  end_date: "2023-12-31"
+  commission_pct: 0.03
+  slippage_pct: 0.01
+  data_source: "csv"  # csv | database
+
+portfolio:
+  rebalance_enabled: false
+  position_sizing_method: "fixed_risk"  # fixed_risk | fixed_amount | kelly
+
+strategies:
+  default: "ema_crossover"
+  available:
+    - name: "ema_crossover"
+      enabled: true
+      params:
+        fast_period: 9
+        slow_period: 21
+    - name: "rsi_mean_reversion"
+      enabled: false
+      params:
+        rsi_period: 14
+        oversold: 30
+        overbought: 70
+    - name: "vwap_bounce"
+      enabled: false
+      params:
+        deviation_pct: 0.5
+
+notifications:
+  telegram:
+    enabled: false
+    # Token and chat_id loaded from environment variables
+  events:
+    - trade_entry
+    - trade_exit
+    - daily_pnl
+    - error_alert
+
+database:
+  pool_size: 10
+  max_overflow: 20
+  pool_timeout: 30
+  pool_recycle: 1800
+  echo_sql: false
+
+api:
+  host: "0.0.0.0"
+  port: 8000
+  reload: true
+  workers: 1
+  cors_origins:
+    - "http://localhost:8501"
+    - "http://localhost:3000"
+
+dashboard:
+  port: 8501
+  refresh_interval_sec: 5
+  chart_theme: "plotly_dark"
+
+logging:
+  level: "INFO"
+  format: "json"  # json | console
+  log_file: "logs/app.log"
+  rotation: "10 MB"
+  retention: "7 days"
