@@ -72,6 +72,15 @@
 - `.claude/skills/graphify/`: AiDE skill for `/graphify` queries during development
 - Regenerate: `source ~/.local/bin/env && graphify extract . --code-only`
 
+## Git Workflow
+- **`main` is locked** — no direct pushes; all changes via feature branches + PR
+- Branch naming: `<type>/<kebab-description>` (e.g. `feat/ema-strategy`, `docs/memento-init`)
+- **`--no-thin` is mandatory** for all pushes — large `graph.json`/`graph.html` cause GitHub `fatal error in commit_refs` with thin packs:
+  ```bash
+  git push --no-thin origin <branch-name>
+  gh pr create --base main --head <branch-name> --title "..." --body "..."
+  ```
+
 ## Testing Pattern
 - Framework: `pytest` with `pytest-cov`
 - Run: `cd trade/groww-intraday && source .venv/bin/activate && pytest --override-ini="addopts="`

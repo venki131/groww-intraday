@@ -6,9 +6,10 @@
 - All work happens on the feature branch. Commit freely there.
 - When the task is complete, push the branch and open a Pull Request against `main`:
   ```bash
-  git push origin <branch-name>
+  git push --no-thin origin <branch-name>   # --no-thin is REQUIRED for this repo (see note below)
   gh pr create --base main --head <branch-name> --title "<title>" --body "<description>"
   ```
+- **`--no-thin` is mandatory** for all pushes to this repo. The large `graphify-out/graph.json` and `graph.html` files cause GitHub's backend to return `fatal error in commit_refs` when thin packs are used. Always use `git push --no-thin`.
 - PRs must be **reviewed and approved manually** before merging. Never auto-merge or force-push to `main`.
 - Branch naming convention: `<type>/<kebab-description>` where type is one of: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`.
 
