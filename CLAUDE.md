@@ -1,3 +1,19 @@
+## Git Workflow
+
+**Branch protection rules — NEVER violate these:**
+- `main` is locked. Direct pushes to `main` are forbidden.
+- For every task, create a new feature branch: `git checkout -b <type>/<short-description>` (e.g. `feat/ema-strategy`, `fix/chunking-bug`, `docs/memento-init`).
+- All work happens on the feature branch. Commit freely there.
+- When the task is complete, push the branch and open a Pull Request against `main`:
+  ```bash
+  git push origin <branch-name>
+  gh pr create --base main --head <branch-name> --title "<title>" --body "<description>"
+  ```
+- PRs must be **reviewed and approved manually** before merging. Never auto-merge or force-push to `main`.
+- Branch naming convention: `<type>/<kebab-description>` where type is one of: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`.
+
+---
+
 ## graphify
 
 This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
