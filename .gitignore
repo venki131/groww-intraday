@@ -1,3 +1,7 @@
+# Graphify large binary outputs (regenerate locally with: graphify export html .)
+graphify-out/graph.json
+graphify-out/graph.html
+
 # Python
 __pycache__/
 *.py[cod]
