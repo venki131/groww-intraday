@@ -1,41 +1,44 @@
-# Active Context: groww-intraday
+# Active Context
 
-## Current Status
-**All foundational work + 2 bug fixes complete.** 102/102 tests pass. Two PRs open awaiting merge.
+## Current Branch
+`feature/nifty100-market-data-collection` — PR open against `main`
 
-## Open PRs
-| PR | Branch | Status | Contents |
-|----|--------|--------|----------|
-| [#1](https://github.com/venki131/groww-intraday/pull/1) | `docs/memento-and-workflow-rules` | Open | Memento, CLAUDE.md, .gitignore, GRAPH_REPORT.md |
-| [#2](https://github.com/venki131/groww-intraday/pull/2) | `fix/live-trading-guard-and-ema-crossover` | Open | 2 bug fixes — 102 tests green |
+## Most Recent Work (this session)
+Completed and pushed the **Nifty 100 market-data collection module**:
 
-## Last Completed Work
-### Session 2 (bug fixes)
-1. ✅ Fixed `test_live_trading_blocked` — added `LiveTradingBlockedError` guard in [`MockBroker.__init__`](../broker/mock.py) when `mode="live"`
-2. ✅ Fixed `test_ema_bullish_crossover_produces_buy` — changed bullish crossover from strict `<` to `<=` in [`EMACrossoverStrategy`](../strategies/ema_crossover.py) (symmetric with bearish `>=`); catches equal→above EMA transitions
-3. ✅ All 102 tests pass on branch `fix/live-trading-guard-and-ema-crossover`
-4. ✅ PR #2 created and pushed to GitHub
+### Commits on feature branch
+| SHA | Message |
+|-----|---------|
+| `582be53` | feat: Nifty 100 market-data collection module (all source + tests) |
+| `4f5bceb` | docs: add MARKET_DATA.md |
 
-### Session 1 (foundation)
-1. ✅ Fixed chunking bug in `fetch_candles_chunked`
-2. ✅ Initial GitHub push + Graphify knowledge graph (951 nodes, 1,747 edges)
-3. ✅ Memento files initialized, CLAUDE.md Git workflow rules added
+### All 166 tests pass
+- 102 original tests (unchanged)
+- 64 new tests in `tests/test_data.py`
+
+## Files Changed This Session
+
+### New
+- `database/models_market.py` — 4 ORM models: `Instrument`, `IndexMembership`, `Candle5m`, `DataDownloadJob`
+- `app/market/instruments.py` — `InstrumentRegistry` with 100 Nifty 100 stocks, ISINs, Groww symbols, sector, historical membership 2010–2024
+- `app/market/candles.py` — full data-quality pipeline + `CandleStore` + `CandleDownloader`
+- `migrations/versions/0002_market_data_schema.py` — Alembic migration for 4 tables
+- `tests/test_data.py` — 64 pure unit tests
+- `docs/MARKET_DATA.md` — schema, setup, quality pipeline, anti-survivorship-bias guide
+
+### Modified
+- `app/market/historical_data.py` — added `normalize_to_utc()` + `detect_gaps()` wrappers
+- `broker/mock.py` — live-mode guard at `__init__` (re-applied from fix branch; not yet merged to main)
+- `strategies/ema_crossover.py` — symmetric EMA crossover `prev_fast <= prev_slow` (same)
+
+## Next Steps
+1. **Merge PR** `feature/nifty100-market-data-collection` → `main`
+2. **Re-merge** `fix/live-trading-guard-and-ema-crossover` if still open (or confirm it's already in main)
+3. **Next feature**: backtesting engine — replay historical candles through strategy, produce P&L report
+4. **Future**: live order execution integration (Groww WebSocket feed → signal → place_order)
 
 ## Active Decisions
-- **Live trading disabled**: `_LIVE_TRADING_ENABLED = False` — paper-trading validation must be completed first
-- **Community labels**: Graphify communities are unnamed (`Community N`) — needs `GOOGLE_API_KEY` or `ANTHROPIC_API_KEY`
-- **pandas-ta**: currently pinned to git URL; switch to `ta` package for portability
-
-## Next Steps (Priority Order)
-1. **Merge PR #2** (bug fixes) → `main` at https://github.com/venki131/groww-intraday/pull/2
-2. **Merge PR #1** (docs/memento) → `main` at https://github.com/venki131/groww-intraday/pull/1
-3. **Paper-trading validation** — run system in paper mode; validate signal → order → fill cycle
-4. **Fix pandas-ta dependency** — switch from git URL to `ta` package
-5. **Optionally name communities** — set `GOOGLE_API_KEY` or `ANTHROPIC_API_KEY` and re-run `graphify cluster-only .`
-
-## Key Files to Know
-- [`broker/mock.py`](../broker/mock.py) — in-memory test broker (recently fixed: live-mode guard)
-- [`strategies/ema_crossover.py`](../strategies/ema_crossover.py) — EMA crossover strategy (recently fixed: symmetric crossover)
-- [`app/market/historical_data.py`](../app/market/historical_data.py) — chunked candle fetch
-- [`config/settings.yaml`](../config/settings.yaml) — central config
-- [`graphify-out/GRAPH_REPORT.md`](../graphify-out/GRAPH_REPORT.md) — architecture summary
+- All timestamps stored in UTC; IST 09:15 = UTC 03:45
+- Zero-volume candles are **non-fatal warnings** (flag only, not filtered out)
+- 30-day API chunk limit enforced in `CandleDownloader`
+- Anti-survivorship bias handled via `IndexMembership.members_as_of(date)`
