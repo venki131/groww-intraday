@@ -62,6 +62,10 @@ class MockBroker(AbstractBroker):
         should_fail_orders: bool = False,
         mode: str = "backtest",
     ) -> None:
+        if mode == "live":
+            raise LiveTradingBlockedError(
+                "MockBroker cannot be used in live mode. Use mode='paper' or mode='backtest'."
+            )
         self._authenticated: bool = False
         self._mode: str = mode
         self.available_cash: Decimal = available_cash

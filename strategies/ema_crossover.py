@@ -95,13 +95,13 @@ class EMACrossoverStrategy(AbstractStrategy):
         df["prev_fast"] = df["ema_fast"].shift(1)
         df["prev_slow"] = df["ema_slow"].shift(1)
 
-        # Bullish crossover: fast was below slow, now above
+        # Bullish crossover: fast was at or below slow, now strictly above
         df["bullish_cross"] = (
-            (df["prev_fast"] < df["prev_slow"]) &
-            (df["ema_fast"] >= df["ema_slow"])
+            (df["prev_fast"] <= df["prev_slow"]) &
+            (df["ema_fast"] > df["ema_slow"])
         )
 
-        # Bearish crossover: fast was above slow, now below
+        # Bearish crossover: fast was at or above slow, now strictly below
         df["bearish_cross"] = (
             (df["prev_fast"] >= df["prev_slow"]) &
             (df["ema_fast"] < df["ema_slow"])
@@ -197,8 +197,9 @@ class EMACrossoverStrategy(AbstractStrategy):
         df["prev_fast"] = df["ema_fast"].shift(1)
         df["prev_slow"] = df["ema_slow"].shift(1)
 
+        # Symmetric crossover: <= / >= to catch equal→diverge transitions
         df["bullish_cross"] = (
-            (df["prev_fast"] < df["prev_slow"]) & (df["ema_fast"] >= df["ema_slow"])
+            (df["prev_fast"] <= df["prev_slow"]) & (df["ema_fast"] > df["ema_slow"])
         )
         df["bearish_cross"] = (
             (df["prev_fast"] >= df["prev_slow"]) & (df["ema_fast"] < df["ema_slow"])
