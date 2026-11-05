@@ -15,9 +15,11 @@
 - [x] Historical OHLCV data fetch working correctly for any date range
 
 ### Testing
-- [x] 60 tests, all passing
+- [x] **102 tests, all passing** (`102 passed in 0.36s`)
 - [x] `pytest-cov` installed; coverage reporting available
 - [x] Known workaround: `pytest --override-ini="addopts="` to skip `--cov-*` when not measuring coverage
+- [x] Fixed `test_live_trading_blocked` — `MockBroker.__init__` now raises `LiveTradingBlockedError` when `mode="live"`
+- [x] Fixed `test_ema_bullish_crossover_produces_buy` — bullish crossover uses `<=` (symmetric with bearish `>=`); catches equal→above EMA transitions
 
 ### DevOps / Tooling
 - [x] GitHub repository: https://github.com/venki131/groww-intraday (public, `main` branch)
@@ -68,8 +70,14 @@
 | `_LIVE_TRADING_ENABLED = False` | Intentional | Safety guard; never enable without paper-trading validation |
 | Graphify community names are `Community N` | Low | Needs LLM API key to generate meaningful names |
 
-## Current Commit History (GitHub)
+## Current Branches / PRs
+| Branch | PR | Status | Description |
+|--------|----|--------|-------------|
+| `main` | — | `cbbd6be` | Base: full trading system |
+| `docs/memento-and-workflow-rules` | [#1](https://github.com/venki131/groww-intraday/pull/1) | Open | Memento + CLAUDE.md + .gitignore |
+| `fix/live-trading-guard-and-ema-crossover` | [#2](https://github.com/venki131/groww-intraday/pull/2) | Open | 2 bug fixes, 102 tests green |
+
+## Current Commit History (GitHub main)
 | Commit | Description |
 |--------|-------------|
-| `efc9e51` | feat: add Graphify knowledge graph (951 nodes, 1747 edges, 53 communities) |
-| `cbbd6be` | Initial commit — 58 files, 8,088 insertions |
+| `cbbd6be` | Initial commit — 58 files, 8,088 insertions (Graphify outputs removed from git history due to size) |
