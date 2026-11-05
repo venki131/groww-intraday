@@ -38,8 +38,9 @@ from __future__ import annotations
 
 import logging
 import time
-from datetime import datetime, timedelta
-from typing import Optional
+from datetime import datetime, timedelta, timezone
+from typing import List, Optional, Sequence
+from zoneinfo import ZoneInfo
 
 import pandas as pd
 
@@ -332,3 +333,57 @@ def fetch_candles_single(
         timeout=30,
     )
     return _response_to_dataframe(response)
+
+
+# ---------------------------------------------------------------------------
+# UTC normalization and gap detection (re-exported from candles module)
+# Defined here as thin wrappers so historical_data remains a one-stop import.
+# ---------------------------------------------------------------------------
+
+_IST = ZoneInfo("Asia/Kolkata")
+_UTC = timezone.utc
+
+_NSE_OPEN_H, _NSE_OPEN_M = 9, 15
+_SLOTS_PER_DAY = 75
+_INTERVAL_MINUTES = 5
+
+
+def normalize_to_utc(df: pd.DataFrame, ts_col: str = "timestamp") -> pd.DataFrame:
+    """
+    Convert timestamp column from IST (Asia/Kolkata) to UTC.
+
+    If tz-naive, assumes IST. Renames column to 'timestamp_utc'.
+    Returns a new DataFrame (original not mutated).
+    """
+    df = df.copy()
+    col = pd.to_datetime(df[ts_col])
+    if col.dt.tz is None:
+        col = col.dt.tz_localize("Asia/Kolkata")
+    col = col.dt.tz_convert("UTC")
+    df["timestamp_utc"] = col
+    if ts_col != "timestamp_utc":
+        df = df.drop(columns=[ts_col])
+    return df
+
+
+def detect_gaps(
+    df: pd.DataFrame,
+    trading_dates: Sequence,
+    ts_col: str = "timestamp_utc",
+    interval_minutes: int = _INTERVAL_MINUTES,
+) -> List[datetime]:
+    """
+    Return UTC timestamps that are expected (per NSE session schedule)
+    but absent from df.
+
+    Args:
+        df             : DataFrame with timestamp_utc column (UTC-aware)
+        trading_dates  : list of datetime.date objects (trading days only)
+        ts_col         : column name for timestamps
+        interval_minutes: bar width in minutes (default 5)
+
+    Returns:
+        Sorted list of missing UTC datetime objects.
+    """
+    from app.market.candles import detect_missing_intervals
+    return detect_missing_intervals(df, trading_dates, ts_col=ts_col)
